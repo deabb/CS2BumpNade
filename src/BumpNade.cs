@@ -71,7 +71,7 @@ namespace BumpNade
             });
 
             RegisterListener<OnTick>(OnTick);
-            RegisterListener<OnEntityCreated>(OnEntityCreate);
+            //RegisterListener<OnEntityCreated>(OnEntityCreate);
             VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(this.OnTakeDamage, HookMode.Pre);
         }
 
@@ -126,7 +126,7 @@ namespace BumpNade
                     playerInfos.Add(player.Slot, new PlayerInfo());
                 }
 
-                if (playerPawn.DesignerName == "player" && info.Inflictor.Value!.DesignerName == "hegrenade_projectile" && info.BitsDamageType == 64)
+                if (playerPawn.DesignerName == "player" && info.Inflictor.Value!.DesignerName == "hegrenade_projectile" && info.BitsDamageType.HasFlag(DamageTypes_t.DMG_BLAST))
                 {
                     info.Damage = 0;
 
@@ -164,7 +164,7 @@ namespace BumpNade
                     }
                 }
 
-                if (info.BitsDamageType == 32 && playerInfo!.KnckedBack)
+                if (info.BitsDamageType.HasFlag(DamageTypes_t.DMG_FALL) && playerInfo!.KnckedBack)
                 {
                     float initialDamage = info.Damage;
 
@@ -259,6 +259,11 @@ namespace BumpNade
                     }
 
                     if (entity.CBodyComponent?.SceneNode?.AbsRotation != new QAngle(0, 0, 0)) entity.Teleport(null, new QAngle(0, 0, 0), entity.Bounces == 1 ? new Vector(0, 0, 0) : null);
+
+                    var nadeSceneNode = entity.CBodyComponent!.SceneNode!;
+                    entity.GravityScale = 2.0f;
+                    if (nadeSceneNode.GetSkeletonInstance().ModelState.ModelName != bumpmine)
+                        entity.SetModel(bumpmine);
                 }
             }
             catch (Exception e)
